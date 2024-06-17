@@ -70,16 +70,13 @@ import kentik_metrics
 
 If all goes well you will be able to send metrics into kentik. If a devices hasn't been created this will be handled automatically.
 
-```python
-config = kentik_metrics.load_config('config.yml')
-```
 
-you will want to setup a few things in the dictionary. You qill need to send the things you need for influx line protocol
+you will want to setup a few things in the dictionary. You will need to send the things you need for influx line protocol, but you will pass them as a dictionary. 
 please see this link for more information https://docs.influxdata.com/influxdb/v2.0/reference/syntax/line-protocol/
 
 here is an example of a record for a cpu metric for a server. Using an openconfig path for the metric is a good idea if it exists, but this is not required
-records MUST contain the following a measurement name,  tags: 'device_name', 
-```influx line protocol
+records MUST contain the following a measurement name,  tags: 'device_name', 'ip_address' fields: at least one key/value pair
+```dictionary format
 metric_dict = {'/components/cpu/utilization', 'tags': {'device_name': 'server01', 'ip_address':'192.168.2.36','region': 'us-west'}, 'fields': {'mycpureading': 0.64}}
 ```
 
