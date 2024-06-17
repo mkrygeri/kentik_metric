@@ -1,0 +1,5 @@
+requests
+pyyaml
+logging
+influx_line_protocol
+influxdb_client
