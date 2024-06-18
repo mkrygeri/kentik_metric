@@ -3,7 +3,6 @@
 import yaml
 import json
 import requests
-import yaml
 import logging
 import os
 import time
@@ -11,7 +10,6 @@ from influx_line_protocol import Metric, MetricCollection
 from datetime import datetime
 import influxdb_client 
 from influxdb_client.client.write_api import SYNCHRONOUS
-
 
 
 #this function will load the config file
