@@ -2,8 +2,8 @@
 kentik:
   apiEndpoint: 'https://grpc.api.kentik.com'
   deviceURI: '/device/v202308beta1/device'
+  metricURI: '/kmetrics/v202207/metrics/api/v2/write?bucket=&org=&precision=ns'
   X-CH-Auth-Email: '<KENTIK_EMAIL>'
   X-CH-Auth-API-Token: '<KENTIK_API_TOKEN>'
   Content-Type: 'application/influx'
-  planid: '<KENTIK_METRIC_PLAN_ID>'
   debug: false
