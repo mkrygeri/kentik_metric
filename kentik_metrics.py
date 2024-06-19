@@ -83,15 +83,15 @@ def kentik_metric(metric_dict,send=True):
             device_names.append(metric_dict['tags']['device_name'])
     
     metric = influxdb_client.Point.from_dict(metric_dict)
-    metric = metric.to_line_protocol()
+    metric = str(metric)
     #metrics.append(metric)
     if send:
-        send_metrics(metrics)
+        send_metrics(metric)
     print (metric)
     return metric
 
-def send_metrics(metrics):
-    for metric in metrics:
+def send_metrics(metric):
+    #for metric in metrics:
         try:
             response = requests.post(metricsurl, headers=headers, data=metric)
             if response.status_code == 204:
@@ -100,7 +100,7 @@ def send_metrics(metrics):
                 print(f"Error: {response.status_code}")
         except requests.exceptions.RequestException as e:
             print(e)
-    metrics.clear()
+        #metric.clear()
 
 #this funtion will give you a list of devices in kentik by device names only
 def get_kentik_device_names():
