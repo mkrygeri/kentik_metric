@@ -41,9 +41,9 @@ else:
 headers ={}
 devicesurl = kcfg['kentik']['apiEndpoint'] + kcfg['kentik']['deviceURI']
 metricsurl = kcfg['kentik']['apiEndpoint'] + kcfg['kentik']['metricURI']
-headers['x-ch-auth-api-token'] = kentiktoken
+headers['X-CH-Auth-API-Token'] = kentiktoken
 headers['Content-Type'] = 'application/json'
-headers['x-ch-auth-email'] = kcfg['kentik']['X-CH-Auth-Email']
+headers['X-CH-Auth-Email'] = kcfg['kentik']['X-CH-Auth-Email']
 debug = kcfg['kentik']['debug']
 logging.basicConfig()
 logging.getLogger().setLevel(logging.ERROR)
@@ -107,6 +107,7 @@ def get_kentik_device_names():
     #print('getting kentik devices')
     response = requests.get(devicesurl, headers=headers)
     kentikDevices = json.loads(response.text)
+    #print(kentikDevices)
     dev = [ sub['deviceName'] for sub in kentikDevices['devices'] ]
     #print(dev)
     return dev
@@ -118,47 +119,55 @@ def gatherPlans():
     try:
         response = requests.request("GET", url, headers=headers, data=payload)
         if response.status_code == 200:
-            plan_data = response.json()
+            plan_data = json.loads(response.text)
+            #print (plan_data)
         else:
             print(f"Error: {response.status_code}")
     except ConnectionError as exc:
          print(f"Connection error: {exc}")
     plan_dict = {}
     for plan in plan_data['plans']:
-        plan_dict[plan['name']] = plan['id']
-    return plan_dict['NMS Metrics']
+        #print(plan)
+        if 'type' in plan['metadata']:
+            plan_dict[plan['metadata']['type']] = {'id':plan['id'],'name':plan['name']}
+        else:
+            continue
+        
+
+    return plan_dict
 
 #print(planid)
 
 #this function will create a new device in kentik
-def create_kentik_device(device_name,ip_address):
-    planid = gatherPlans()
+def create_kentik_device(device_name,device_ip):
+    plan_dict = gatherPlans()
     #print('creating kentik device')
     payload = json.dumps({
             "device": {
                 "deviceName":  device_name,
-                "deviceSnmpIp": ip_address,
+                "deviceSnmpIp": device_ip,
                 "site": "",
-                "plan_id": planid,
+                "plan": {'id':plan_dict['metrics']['id'],'metadata': {'type':'metrics'}},
+                "plan_id": plan_dict['metrics']['id'],
                 "labels": [],
-                "deviceSnmpIp": ip_address,
+                "deviceSnmpIp": device_ip,
                 "minimize_snmp": True,
-                "device_snamp_community": "kentikSNMP",
-                "deviceType": "router",
-                "plan": {
-                    "id": planid,
-                    "name": "NMS Metrics"
-                    },
-                "sendingIps": [
-                ip_address
-                ],
-                "device_sample_rate": "1",
+                "device_snmp_community": "",
+                "device_type": "router",
                 "device_subtype": "router",
+                "device_flow_type": "auto",
+                "device_sample_rate": "1",
+                "sending_ips": ["127.0.0.1"],
+                "device_snmp_ip": device_ip,
+                "device_sample_rate": 1,
                 "device_bgp_type": "none"
             }
         })
+    print (payload)
+    print (headers)
+    print (devicesurl)
     kentikDevice = requests.request("POST", devicesurl, headers=headers, data=payload)
-    #print(kentikDevice.text)
+    print(kentikDevice.text)
 
 if __name__ == "__main__":
     # Test the module
