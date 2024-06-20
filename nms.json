@@ -1,0 +1,44 @@
+    {"company_id": "int",
+    "device_id": "int",
+    "hw_version": "str",
+    "id": "int",
+    "ip_address": "str",
+    "location": "str",
+    "model": "str",
+    "name": "",
+    "os_name": "str",
+    "os_version":  "str",
+    "product_name": "str",
+    "serial_number":   "str",
+    "site_id": "int",
+    "sys_object_id": "str",
+    "system_description": "str",
+    "status": "V",
+    "status_last_change": "str",
+    "status_reason": "str",
+
+    "vendor": "str",
+    "last_seen": "str",
+
+    // relations
+    "site": "Site",
+    "interfaces": "Interface[]",
+    "components": "Component[]",
+    "peers": "Device[]",
+    "neighbors": "Device[]",
+    "bgpGlobal": "BgpGlobal",
+    "labels": "Label[]",
+
+    "lldpInterfaces": "LldpInterface[]",
+    "lldpNeighbors": "LldpNeighbor[]",
+    "lldpGlobal": "LldpGlobal",
+
+    "ospfInterfaces": "OspfInterface[]",
+    "ospfNeighbors": "OspfNeighbor[]",
+    "ospfGlobal": "OspfGlobal",
+
+    "isisAdjacencies": "IsisAdjacency[]",
+
+    "agent_id": "int",
+    "ranger_snmp_ip": "str",
+    "ranger_icmp_ip": "str"}

@@ -55,11 +55,11 @@ client = influxdb_client.InfluxDBClient(
    url=metricsurl,
    token='',
    org='',
-   debug=True
+   debug=debug
 )
 write_api = client.write_api(write_options=SYNCHRONOUS)
 
-#influxdb stuff
+#This will handle the sending of metrics to kentik and creating a device if needed
 def kentik_metric(metric_dict,send=True):
     #print(metric_dict)
     #verify the required dict scructure is present
@@ -87,7 +87,6 @@ def kentik_metric(metric_dict,send=True):
     #metrics.append(metric)
     if send:
         send_metrics(metric)
-    print (metric)
     return metric
 
 def send_metrics(metric):
@@ -148,7 +147,7 @@ def create_kentik_device(device_name,device_ip):
                 "deviceSnmpIp": device_ip,
                 "site": "",
                 "plan": {'id':plan_dict['metrics']['id'],'metadata': {'type':'metrics'}},
-                "plan_id": plan_dict['metrics']['id'],
+                "plan_id": plan_dict['flowpak']['id'],
                 "labels": [],
                 "deviceSnmpIp": device_ip,
                 "minimize_snmp": True,
@@ -157,16 +156,24 @@ def create_kentik_device(device_name,device_ip):
                 "device_subtype": "router",
                 "device_flow_type": "auto",
                 "device_sample_rate": "1",
-                "sending_ips": ["127.0.0.1"],
+                "sending_ips": [device_ip],
                 "device_snmp_ip": device_ip,
                 "device_sample_rate": 1,
                 "device_bgp_type": "none"
             }
         })
-    print (payload)
-    print (headers)
-    print (devicesurl)
-    kentikDevice = requests.request("POST", devicesurl, headers=headers, data=payload)
+    #print (payload)
+    #print (headers)
+    #print (devicesurl)
+    try:
+        kentikDevice = requests.request("POST", devicesurl, headers=headers, data=payload)
+        if kentikDevice.status_code == 200:
+            print(f"Device {device_name} created")
+        else:
+            print(f"Error: {kentikDevice.status_code}")
+            print(f"Message: {kentikDevice.text}")
+    except requests.exceptions.RequestException as e:
+        print(e)
     print(kentikDevice.text)
 
 if __name__ == "__main__":
