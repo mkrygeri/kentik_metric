@@ -22,7 +22,6 @@ pip install -r requirements.txt
 
 import kentik_metrics
 
-Sure, here's a basic `README.md` for your module:
 
 ```markdown
 # Kentik Metrics Module
@@ -48,15 +47,13 @@ You can install these packages using pip:
 pip install -r requirements.txt
 ```
 
-populate a config.yml with your 
+populate a config.yml with your API info apiEndpoint and deviceURI can be left alone unless you are sending to a cluster other than US.  
 ```yaml
 kentik:
   apiEndpoint: 'https://grpc.api.kentik.com'
   deviceURI: '/device/v202308beta1/device'
   X-CH-Auth-Email: 'example@example.com'
   X-CH-Auth-API-Token: '09db8deadb33f12346745'
-  Content-Type: 'application/influx'
-  planid: '234567'
   debug: false
 ```
 
@@ -80,7 +77,15 @@ records MUST contain the following a measurement name,  tags: 'device_name', 'ip
 metric_dict = {'/components/cpu/utilization', 'tags': {'device_name': 'server01', 'ip_address':'192.168.2.36','region': 'us-west'}, 'fields': {'mycpureading': 0.64}}
 ```
 
-
+Once you have defined a dictionary, you may call the export function.
+```
+result = kentik_metric(metric_dict)
+```
+The function will send records by default. It will also return a string containing the influx formatted record that was sent. This may be useful if you would like to send this data to a local influxdb server. 
+If you don't want to send the data to kentik but want to return the string, simply add send=False to the parameters.
+```
+result = kentik_metric(metric_dict,send=False)
+```
 
 ## Contributing
 
