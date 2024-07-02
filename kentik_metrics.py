@@ -39,6 +39,8 @@ else:
 
 
 headers ={}
+kentikDevices={}
+metrics=''
 devicesurl = kcfg['kentik']['apiEndpoint'] + kcfg['kentik']['deviceURI']
 metricsurl = kcfg['kentik']['apiEndpoint'] + kcfg['kentik']['metricURI']
 headers['X-CH-Auth-API-Token'] = kentiktoken
@@ -50,7 +52,7 @@ logging.getLogger().setLevel(logging.ERROR)
 requests_log = logging.getLogger("requests.packages.urllib3")
 requests_log.setLevel(logging.ERROR)
 requests_log.propagate = True
-metrics=[]
+timer = time.time_ns()
 client = influxdb_client.InfluxDBClient(
    url=metricsurl,
    token='',
@@ -61,6 +63,8 @@ write_api = client.write_api(write_options=SYNCHRONOUS)
 
 #This will handle the sending of metrics to kentik and creating a device if needed
 def kentik_metric(metric_dict,send=True):
+    global metrics
+    global timer
     #print(metric_dict)
     #verify the required dict scructure is present
     if  'device_ip' not in metric_dict['tags'] or 'device_name' not in metric_dict['tags']:
@@ -84,17 +88,26 @@ def kentik_metric(metric_dict,send=True):
     
     metric = influxdb_client.Point.from_dict(metric_dict)
     metric = str(metric)
-    #metrics.append(metric)
-    if send:
-        send_metrics(metric)
+    metric= metric + '\n'
+    metrics = metrics + metric
+    wait = time.time_ns() - timer
+    print("wait:{}",  wait)
+    if send & (wait > 10000000000):
+        send_metrics()
+        print(metrics)
+        timer = time.time_ns()
     return metric
 
-def send_metrics(metric):
+def send_metrics():
+        global metrics
+        timer = time.time_ns()
     #for metric in metrics:
         try:
-            response = requests.post(metricsurl, headers=headers, data=metric)
+            response = requests.post(metricsurl, headers=headers, data=metrics)
             if response.status_code == 204:
                 print('metric sent')
+                print(metrics)
+                metrics = ''
             else:
                 print(f"Error: {response.status_code}")
         except requests.exceptions.RequestException as e:
@@ -144,24 +157,17 @@ def create_kentik_device(device_name,device_ip):
     payload = json.dumps({
             "device": {
                 "deviceName":  device_name,
-                "deviceSnmpIp": device_ip,
+                "company_id":"98837",
                 "site": "",
-                "plan": {'id':plan_dict['metrics']['id'],'metadata': {'type':'metrics'}},
-                "plan_id": plan_dict['flowpak']['id'],
-                "labels": [],
-                "deviceSnmpIp": device_ip,
-                "minimize_snmp": True,
-                "device_snmp_community": "",
+                "planId": plan_dict['metrics']['id'],
                 "device_type": "router",
                 "device_subtype": "router",
-                "device_flow_type": "auto",
-                "device_sample_rate": "1",
-                "sending_ips": [device_ip],
-                "device_snmp_ip": device_ip,
-                "device_sample_rate": 1,
+                "nms": {
+                    "agentId": "0",
+                    "ipAddress": "2601:188:cf00:a10e::915",
+                    },
                 "device_bgp_type": "none"
-            }
-        })
+        }})
     #print (payload)
     #print (headers)
     #print (devicesurl)
